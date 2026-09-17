@@ -28,7 +28,7 @@ class ChatRequest(BaseModel):
 
 
 # Decorator specifying an HTTP GET route at the root URL path ("/")
-@app.get("/")
+@app.get("/api")
 # Handler function executed whenever a GET request arrives at "/"
 def home():
     # Return a Python dictionary, which FastAPI automatically converts into a JSON response
@@ -52,7 +52,7 @@ def retrieve_portfolio_info(user_message: str):
     return "\n".join(relevant_sections)
 
 # Decorator specifying an HTTP POST route at the path "/chat"
-@app.post("/chat")
+@app.post("/api/chat")
 # Handler function that receives and validates the JSON request body using the ChatRequest schema
 def chat(request: ChatRequest):
 
