@@ -1,5 +1,6 @@
 # Import the FastAPI class from the fastapi library to create our API web service
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 # Import BaseModel from pydantic to define structured data schemas with automatic validation
 from pydantic import BaseModel
 # from openai import OpenAI
@@ -12,6 +13,15 @@ load_dotenv()
 
 # Create an instance of the FastAPI application to register routes and middleware
 app = FastAPI()
+
+# Enable CORS for requests from the frontend and external clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # client=OpenAI(
 #     api_key=os.getenv("OPENAI_API_KEY")
@@ -27,9 +37,10 @@ class ChatRequest(BaseModel):
     message: str
 
 
-# Decorator specifying an HTTP GET route at the root URL path ("/")
+# Decorator specifying an HTTP GET route at the root URL path ("/") and ("/api")
+@app.get("/")
 @app.get("/api")
-# Handler function executed whenever a GET request arrives at "/"
+# Handler function executed whenever a GET request arrives at "/" or "/api"
 def home():
     # Return a Python dictionary, which FastAPI automatically converts into a JSON response
     return {
