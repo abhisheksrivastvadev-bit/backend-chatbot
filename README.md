@@ -12,7 +12,7 @@ A lightweight, high-performance RESTful API for a chatbot application built with
   - [How FastAPI and Uvicorn Work Together](#how-fastapi-and-uvicorn-work-together)
 - [Project Overview](#-project-overview)
 - [Project Directory Structure](#-project-directory-structure)
-- [Code Explanation (`chatbot/main.py`)](#-code-explanation-chatbotmainpy)
+- [Code Explanation (`main.py`)](#-code-explanation-mainpy)
 - [Installation & Setup](#-installation--setup)
 - [Running the Application](#-running-the-application)
 - [API Endpoints & Usage Examples](#-api-endpoints--usage-examples)
@@ -73,7 +73,7 @@ Uvicorn acts as the **bridge**:
          └────────┬────────┘
                   │ Calls handler function
                   ▼
-          chatbot/main.py
+              main.py
 ```
 
 ---
@@ -81,17 +81,15 @@ Uvicorn acts as the **bridge**:
 ## 📁 Project Directory Structure
 
 ```text
-python-chatbot/
-│
-├── README.md                 # Project documentation and guide
-└── chatbot/
-    ├── ai_env/               # Python virtual environment (dependencies)
-    └── main.py               # Main application entry point (FastAPI app and routes)
+chatbot/
+├── ai_env/       # Python virtual environment (dependencies)
+├── main.py       # Main application entry point (FastAPI app and routes)
+└── README.md     # Project documentation and guide
 ```
 
 ---
 
-## 🔍 Code Explanation (`chatbot/main.py`)
+## 🔍 Code Explanation (`main.py`)
 
 Here is how each part of `main.py` works:
 
