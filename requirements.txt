@@ -9,3 +9,4 @@ langchain-huggingface
 chromadb
 sentence-transformers
 langchain-text-splitters
+pinecone
