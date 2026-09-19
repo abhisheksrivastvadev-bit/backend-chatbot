@@ -17,3 +17,4 @@ pydantic
 huggingface_hub
 python-dotenv
 pinecone
+numpy
