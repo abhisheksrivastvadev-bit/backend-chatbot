@@ -20,7 +20,7 @@ loader = PyPDFLoader("Abhishek_Resume.pdf")
 
 documents = loader.load()
 
-print(f"PDF pages loaded: {len(documents)}")
+# print(f"PDF pages loaded: {len(documents)}")
 
 
 # -----------------------------------
@@ -34,7 +34,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 chunks = text_splitter.split_documents(documents)
 
-print(f"Total chunks created: {len(chunks)}")
+# print(f"Total chunks created: {len(chunks)}")
 
 
 # -----------------------------------
@@ -52,7 +52,7 @@ embeddings = HuggingFaceEmbeddings(
 
 index_name = os.getenv("PINECONE_INDEX_NAME")
 
-print(f"Pinecone index: {index_name}")
+# print(f"Pinecone index: {index_name}")
 
 
 # -----------------------------------
@@ -66,4 +66,4 @@ vectorstore = PineconeVectorStore.from_documents(
 )
 
 
-print("Successfully uploaded resume to Pinecone!")
+# print("Successfully uploaded resume to Pinecone!")
