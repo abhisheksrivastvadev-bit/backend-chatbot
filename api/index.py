@@ -8,6 +8,7 @@ from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
 import os
 from portfolio import portfolio_data
+from rag import retrieve_portfolio_info
 
 load_dotenv()
 
@@ -47,20 +48,20 @@ def home():
         "message": "Chatbot API is running"
     }
 
-def retrieve_portfolio_info(user_message: str):
-    print("user_message",user_message)
-    user_message = user_message.lower()
+# def retrieve_portfolio_info(user_message: str):
+#     print("user_message",user_message)
+#     user_message = user_message.lower()
 
-    relevant_sections = []
+#     relevant_sections = []
 
-    for section, content in portfolio_data.items():
+#     for section, content in portfolio_data.items():
 
-        keywords = section.lower().split()
+#         keywords = section.lower().split()
 
-        if any(keyword in user_message for keyword in keywords):
-            relevant_sections.append(content)
+#         if any(keyword in user_message for keyword in keywords):
+#             relevant_sections.append(content)
 
-    return "\n".join(relevant_sections)
+#     return "\n".join(relevant_sections)
 
 # Decorator specifying an HTTP POST route at the path "/chat"
 @app.post("/api/chat")
@@ -85,19 +86,19 @@ def chat(request: ChatRequest):
             #     {"role": "user", "content": user_message}
             # ]
             messages=[
-                {
-                    "role": "system",
-                    "content": """
-                    You are an AI assistant for Abhishek Srivastva's portfolio website.
+                    {
+                        "role": "system",
+                        "content": """
+                        You are an AI assistant for Abhishek Srivastva's portfolio website.
 
-                    You can only answer questions related to Abhishek's portfolio,
-                    experience, skills, projects, education, resume, and professional background.
+                        Answer questions using only the information provided in the portfolio context.
 
-                    If the user asks a question unrelated to Abhishek's portfolio,
-                    politely say that you can only answer portfolio-related questions.
+                        Do not invent or assume information that is not present in the context.
 
-                    Do not answer general knowledge questions.
-                    """
+                        If the answer cannot be found in the provided context, politely say that the information is not available in Abhishek's portfolio.
+
+                        Only answer questions related to Abhishek's portfolio, experience, skills, projects, education, resume, and professional background.
+                        """
                     },
                     {
                         "role": "user",
