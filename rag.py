@@ -1,90 +1,212 @@
 
-########## Pinecone Vector Database for deployment #####################
 
 
 
+
+
+
+# ########## Pinecone Vector Database for deployment #####################
 import os
 
 from dotenv import load_dotenv
-
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_pinecone import PineconeVectorStore
-
+from huggingface_hub import InferenceClient
+from pinecone import Pinecone
 
 load_dotenv()
 
 
-# -----------------------------------
-# 1. Create embedding model
-# -----------------------------------
+# ==============================
+# Environment variables
+# ==============================
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
+HF_API_KEY = os.getenv("Hugging_Face_Api_Key")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
+
+
+# ==============================
+# Hugging Face client
+# ==============================
+
+hf_client = InferenceClient(
+    api_key=HF_API_KEY
 )
 
 
-# -----------------------------------
-# 2. Connect to Pinecone
-# -----------------------------------
+# ==============================
+# Pinecone client
+# ==============================
 
-index_name = os.getenv("PINECONE_INDEX_NAME")
+pc = Pinecone(
+    api_key=PINECONE_API_KEY
+)
 
-vectorstore = PineconeVectorStore(
-    index_name=index_name,
-    embedding=embeddings
+index = pc.Index(
+    PINECONE_INDEX_NAME
 )
 
 
-# -----------------------------------
-# 3. Create retriever
-# -----------------------------------
+# ==============================
+# Generate embedding
+# ==============================
 
-retriever = vectorstore.as_retriever(
-    search_kwargs={
-        "k": 1
-    }
-)
+def generate_embedding(text: str):
+
+    embedding = hf_client.feature_extraction(
+        text,
+        model="sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+    # Hugging Face returns a 1D NumPy array
+    # Example:
+    # (384,)
+    query_vector = embedding.tolist()
+
+    return query_vector
 
 
-# -----------------------------------
-# 4. Retrieval function
-# -----------------------------------
+# ==============================
+# Retrieve portfolio information
+# ==============================
 
 def retrieve_portfolio_info(user_message: str):
 
-    results = retriever.invoke(user_message)
+    # Step 1:
+    # Convert user's question into a vector
+
+    query_vector = generate_embedding(user_message)
+
+    # Step 2:
+    # Search Pinecone
+
+    results = index.query(
+        vector=query_vector,
+        top_k=1,
+        include_metadata=True
+    )
+
+    # Step 3:
+    # Get matching documents
+
+    matches = results.get("matches", [])
+
+    if not matches:
+        return ""
+
+    # Step 4:
+    # Extract text from metadata
 
     context = "\n\n".join(
-        result.page_content
-        for result in results
+        match["metadata"].get("text", "")
+        for match in matches
     )
 
     return context
 
 
-# -----------------------------------
-# 5. Test
-# -----------------------------------
+# ==============================
+# Local test
+# ==============================
 
 if __name__ == "__main__":
 
-    query = "What is Abhishek's phone number?"
+    query = "What are Abhishek's skills?"
 
-    results = retriever.invoke(query)
+    context = retrieve_portfolio_info(query)
 
-    print("\n========== SEARCH RESULTS ==========\n")
+    print("\n========== SEARCH RESULT ==========\n")
 
-    for i, result in enumerate(results):
+    print(context)
 
-        print(f"----- RESULT {i + 1} -----")
+# ########## Pinecone Vector Database for deployment #####################
 
-        print(result.page_content)
 
-        print("\nMetadata:")
 
-        print(result.metadata)
 
-        print()
+
+
+# import os
+
+# from dotenv import load_dotenv
+
+# from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_pinecone import PineconeVectorStore
+
+
+# load_dotenv()
+
+
+# # -----------------------------------
+# # 1. Create embedding model
+# # -----------------------------------
+
+# embeddings = HuggingFaceEmbeddings(
+#     model_name="sentence-transformers/all-MiniLM-L6-v2"
+# )
+
+
+# # -----------------------------------
+# # 2. Connect to Pinecone
+# # -----------------------------------
+
+# index_name = os.getenv("PINECONE_INDEX_NAME")
+
+# vectorstore = PineconeVectorStore(
+#     index_name=index_name,
+#     embedding=embeddings
+# )
+
+
+# # -----------------------------------
+# # 3. Create retriever
+# # -----------------------------------
+
+# retriever = vectorstore.as_retriever(
+#     search_kwargs={
+#         "k": 1
+#     }
+# )
+
+
+# # -----------------------------------
+# # 4. Retrieval function
+# # -----------------------------------
+
+# def retrieve_portfolio_info(user_message: str):
+
+#     results = retriever.invoke(user_message)
+
+#     context = "\n\n".join(
+#         result.page_content
+#         for result in results
+#     )
+
+#     return context
+
+
+# # -----------------------------------
+# # 5. Test
+# # -----------------------------------
+
+# if __name__ == "__main__":
+
+#     query = "What is Abhishek's phone number?"
+
+#     results = retriever.invoke(query)
+
+#     print("\n========== SEARCH RESULTS ==========\n")
+
+#     for i, result in enumerate(results):
+
+#         print(f"----- RESULT {i + 1} -----")
+
+#         print(result.page_content)
+
+#         print("\nMetadata:")
+
+#         print(result.metadata)
+
+#         print()
 
 
 

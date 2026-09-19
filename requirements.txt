@@ -1,12 +1,19 @@
-fastapi
-pydantic
-python-dotenv
-huggingface_hub
+# fastapi
+# pydantic
+# python-dotenv
+# huggingface_hub
 
-langchain
-langchain-community
-langchain-huggingface
-chromadb
-sentence-transformers
-langchain-text-splitters
+# langchain
+# langchain-community
+# langchain-huggingface
+# # chromadb
+# sentence-transformers
+# langchain-text-splitters
+# pinecone
+
+fastapi
+uvicorn
+pydantic
+huggingface_hub
+python-dotenv
 pinecone
