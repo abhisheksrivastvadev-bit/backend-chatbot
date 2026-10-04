@@ -9,8 +9,12 @@ from dotenv import load_dotenv
 import os
 from portfolio import portfolio_data
 from rag import retrieve_portfolio_info
+from langsmith import traceable
+
 
 load_dotenv()
+MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+
 
 # Create an instance of the FastAPI application to register routes and middleware
 app = FastAPI()
@@ -63,29 +67,13 @@ def home():
 
 #     return "\n".join(relevant_sections)
 
-# Decorator specifying an HTTP POST route at the path "/chat"
-@app.post("/api/chat")
-# Handler function that receives and validates the JSON request body using the ChatRequest schema
-def chat(request: ChatRequest):
+@traceable(name="LLM Conversation")
+def ask_llm(user_message: str):
+    relevant_context = retrieve_portfolio_info(user_message)
 
-    # Extract the user's message text from the validated request model
-
-    try:
-        user_message = request.message
-
-        # response=client.responses.create(
-        #     model="gpt-5-mini",
-        #     input=user_message
-        # )
-
-        relevant_context = retrieve_portfolio_info(user_message)
-
-        response=client.chat.completions.create(
-            model="meta-llama/Llama-3.1-8B-Instruct", 
-            # messages=[
-            #     {"role": "user", "content": user_message}
-            # ]
-            messages=[
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[
                     {
                         "role": "system",
                         "content": """
@@ -112,9 +100,68 @@ def chat(request: ChatRequest):
                         {user_message}
                         """
                     }
-                ]
-        )
-        api_response=response.choices[0].message.content
+                ],
+        temperature=0.7,
+        max_tokens=200
+    )
+
+    return response.choices[0].message.content
+
+# Decorator specifying an HTTP POST route at the path "/chat"
+@app.post("/api/chat")
+# Handler function that receives and validates the JSON request body using the ChatRequest schema
+def chat(request: ChatRequest):
+
+    # Extract the user's message text from the validated request model
+
+    try:
+        user_message = request.message
+
+        # response=client.responses.create(
+        #     model="gpt-5-mini",
+        #     input=user_message
+        # )
+
+        # relevant_context = retrieve_portfolio_info(user_message)
+
+        response = ask_llm(user_message)
+
+        # response=client.chat.completions.create(
+        #     model="meta-llama/Llama-3.1-8B-Instruct", 
+        #     # messages=[
+        #     #     {"role": "user", "content": user_message}
+        #     # ]
+        #     messages=[
+        #             {
+        #                 "role": "system",
+        #                 "content": """
+        #                 You are an AI assistant for Abhishek Srivastva's portfolio website.
+
+        #                 Answer questions using only the information provided in the portfolio context.
+
+        #                 Do not invent or assume information that is not present in the context.
+
+        #                 If the answer cannot be found in the provided context, politely say that the information is not available in Abhishek's portfolio.
+
+        #                 Only answer questions related to Abhishek's portfolio, experience, skills, projects, education, resume, and professional background.
+        #                 """
+        #             },
+        #             {
+        #                 "role": "user",
+        #                 "content": f"""
+        #                 Portfolio Information:
+
+        #                 {relevant_context}
+
+        #                 User Question:
+
+        #                 {user_message}
+        #                 """
+        #             }
+        #         ]
+        # )
+        # api_response=response.choices[0].message.content
+        api_response=response
 
         # Return a JSON response containing the chatbot's reply
         return {
